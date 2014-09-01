@@ -48,6 +48,9 @@ def add_command(function, cmd_aliases=None):
     
     return function
 
+def add_importer(key, handler):
+    importers[key] = handler
+
 def get_command_aliases(name):
     if name in command2aliases:
         return " [%s]" % ",".join(command2aliases[name])
@@ -55,6 +58,7 @@ def get_command_aliases(name):
 
 # list of providers, to be loaded from plugins
 providers = []
+importers = {}
 commands = {}
 aliases = {}
 command2aliases = {}

@@ -137,6 +137,46 @@ def do_lookup(key):
     
     return main_ref
 
+@plugins.command_aliases("import")
+def import_file(collection, args):
+    """Import an existing file in the collection"""
+
+    for path in args:
+        if not os.path.exists(path):
+            print("no such file: "+path)
+            continue
+        
+        extension = path.split(".")[-1]
+        if extension not in plugins.importers:
+            print("no importer for "+extension)
+            return
+        
+        p = plugins.importers[extension]
+        try:
+            refs = p.import_file(path)
+        except:
+            print("error in "+p.name)
+            continue
+        
+        l = len(refs)
+        if l < 1:
+            print("No ref found")
+            return
+        
+        refs = [ Ref(ref) for ref in refs ]
+        for r in refs:
+            print(r)
+        
+        askAdd = raw_input("Add these %s refs? [y/N] " % len(refs))
+        if askAdd.strip().lower() == "y":
+            keys = []
+            for ref in refs:
+                keys.append( collection.add_reference(ref) )
+            collection.save()
+            print("References added: ", keys)
+        else:
+            print("NOT added")
+
 
 @plugins.command_aliases("ls,l")
 def list(collection, args):

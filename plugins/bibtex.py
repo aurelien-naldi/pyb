@@ -5,6 +5,7 @@ import urllib2
 import sys
 from doi import get_doi
 import re
+import os
 
 try:
     from bibtexparser.bparser import BibTexParser
@@ -13,8 +14,10 @@ try:
     _HAS_DEPS = True
     
     def ref_load(plugins):
-        plugins.add_provider( BiBTeXProvider() )
+        provider = BiBTeXProvider()
+        plugins.add_provider( provider )
         plugins.add_command(bibtex)
+        plugins.add_importer("bib", provider)
 except:
     print( "Missing deps for the bibtex provider" )
     _HAS_DEPS = False
@@ -78,34 +81,55 @@ class BiBTeXProvider:
         f.close()
         return result
 
-    def parse_bibtex(self, bibtex):
+    def parse_bibtex_stream(self, bibtex):
         "Parse a bibtex entry (shared code between the load_bibtex and load_doi functions)"
         #print( bibtex )
         bp = BibTexParser(bibtex, customization=customize_bibtex)
         entries = bp.get_entry_list()
-        for b in entries:
-            title = b["title"]
-            authors = [ [name.strip() for name in a.split(",")] for a in b["author"] ]
-            if "journal" in b:
-                journal = b["journal"]
-            elif "booktitle" in b:
-                journal = b["booktitle"]
-            else:
-                journal = ""
-            
-            ref = {
-                "title": title,
-                "authors": authors,
-                "journal": journal
-            }
-            
-            for bibtex_key, meta_key in bibtex2meta:
-                if bibtex_key in b:
-                    ref[meta_key] = b[bibtex_key]
-            
-            return ref
+        return entries
+        
+    def parse_bibtex(self, bibtex):
+        
+        for b in self.parse_bibtex_stream(bibtex):
+            return ref_from_bibtex(self, b)
         
         print( "WHAT?" )
+    
+    def ref_from_bibtex(self, b):
+        title = b["title"]
+        authors = [ [name.strip() for name in a.split(",")] for a in b["author"] ]
+        if "journal" in b:
+            journal = b["journal"]
+        elif "booktitle" in b:
+            journal = b["booktitle"]
+        else:
+            journal = ""
+        ref = {
+            "title": title,
+            "authors": authors,
+            "journal": journal
+        }
+        
+        for bibtex_key, meta_key in bibtex2meta:
+            if bibtex_key in b:
+                ref[meta_key] = b[bibtex_key]
+            
+        return ref
+    
+    def import_file(self, path):
+        print("Starting bibtex import...")
+        f = open(path)
+        bibtex = f.read()
+        f.close()
+        bib_refs = self.parse_bibtex_stream(bibtex)
+        if not bib_refs:
+            print("No parsed refs!")
+            return []
+        
+        print("Converting parsed bibtex...")
+        result = [ self.ref_from_bibtex(b) for b in bib_refs ]
+        print("Done")
+        return result
 
 
 delkeys = ("abstract", "keywords")
