@@ -61,7 +61,16 @@ class BiBTeXProvider:
         try:
             req = urllib2.Request("http://dx.doi.org/%s"%doi, headers = {'Accept' : 'application/x-bibtex'})
             bibtex = urllib2.urlopen(req).read().strip()
-        except:
+        except: bibtex = None
+        
+        # add fallback request to crossref API
+        if bibtex is None:
+            try:
+                req = urllib2.Request("http://api.crossref.org/works/%s/transform/application/x-bibtex" % doi)
+                bibtex = urllib2.urlopen(req).read().strip()
+            except: bibtex = None
+        
+        if bibtex is None:
             return None
         
         ref = self.parse_bibtex(bibtex)
@@ -91,7 +100,7 @@ class BiBTeXProvider:
     def parse_bibtex(self, bibtex):
         
         for b in self.parse_bibtex_stream(bibtex):
-            return ref_from_bibtex(self, b)
+            return self.ref_from_bibtex(b)
         
         print( "WHAT?" )
     
@@ -140,6 +149,12 @@ def customize_bibtex(record):
     record = convert_to_unicode(record)
     record = author(record)
     
+    # strip curly brackets
+    for k in record:
+        if k == "author":
+            record[k] = [ re.sub(r'[{}]', '', a) for a in record[k] ]
+            continue
+        record[k] = re.sub(r'[{}]', '', record[k])
     return record
 
 
