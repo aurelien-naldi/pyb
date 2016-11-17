@@ -178,24 +178,26 @@ Provide another filename as argument to change the destination"""
     f.close()
 
 
-def to_bibtex(key, ref):
+def to_bibtex(key, ref, links=False):
     # TODO: support other refs than article
     
     fields = []
     bib_authors = []
     for last,given in ref["authors"]:
-        bib_authors.append( "%s, %s" % (last,given) )
+        if given:
+            bib_authors.append( "{%s}, {%s}" % (last,'%s.'%given[0]) )
+        else:
+            bib_authors.append( "{%s}" % last )
     fields.append( ("author", " and ".join( bib_authors ) ) )
     
     # export many keys as is
     for meta_key, bibtex_key in meta2bibtex:
         if meta_key in ref:
-            fields.append( (bibtex_key, ref[meta_key]) )
+            fields.append( (bibtex_key, "%s" % ref[meta_key]) )
     
-    if "links" in ref:
+    if links and "links" in ref:
         for k,v in ref["links"].iteritems():
             fields.append( (k,v) )
-    
     
     # build the bibtex snippet
     ret = "@article{%s" % key

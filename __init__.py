@@ -122,7 +122,7 @@ class RefCollection:
     
     def add_reference(self, ref, key=None):
         if not key:
-            key = remove_accents(ref.authors[0][0])+ref.year
+            key = "%s%s" % (remove_accents(ref.authors[0][0]),ref.year)
         
         key = self.pick_key(key)
         self.refs[key] = ref
