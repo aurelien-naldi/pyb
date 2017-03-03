@@ -31,7 +31,7 @@ def command_aliases(cmd_aliases):
     return decorator
 
 def add_command(function, cmd_aliases=None):
-    name = function.func_name
+    name = function.__name__
     if name in commands:
         print("Command %s already exists" % name)
         return function

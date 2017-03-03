@@ -9,8 +9,17 @@ def debug(*l):
     if False:
         print(*l)
 
-OFIELDS = ("title", "authors", "year", "journal", "volume", "issue", "pages", "links")
-FIELDS = set( OFIELDS )
+FIELDS = {
+    "title":None,
+    "authors":None,
+    "year":None,
+    "journal":None,
+    "volume":None,
+    "issue":None,
+    "pages":None,
+    "links":[],
+    "tags":[],
+}
 
 
 class Ref:
@@ -34,16 +43,14 @@ class Ref:
         # default for missing fields
         for key in FIELDS:
             if not hasattr(self, key):
-                setattr(self, key, None)
+                setattr(self, key, FIELDS[key])
         
         # Remove the ending point which is often included
         if self.title.endswith("."):
             self.title = self.title[:-1]
         
-        if not self.links:
-            self.links = {}
+        self.tags = set(self.tags)
         
-        self.tags = set()
         self.alternatives = []
     
     def add_alternative(self, ref):
@@ -69,8 +76,8 @@ class Ref:
                 issue = "%s:" % self.volume
         elif self.issue:
             issue = "%s:" % self.issue
-        descr = u"%s\n%s (%s)\n%s %s%s\n%s" % (self.title, self.fmt_authors(), self.year, self.journal, issue, self.pages, self.links)
-        return descr.encode("utf-8")
+        descr = "%s\n%s (%s)\n%s %s%s\n%s" % (self.title, self.fmt_authors(), self.year, self.journal, issue, self.pages, self.links)
+        return descr
     
     def fmt_authors(self):
         "Get a formatted list of authors"
@@ -95,7 +102,7 @@ class Ref:
     def encode(self, encoder):
         ret = "{\n"
         isfirst = True
-        for key in OFIELDS:
+        for key in FIELDS:
             value = getattr(self,key)
             if value:
                 if isfirst:
@@ -144,7 +151,13 @@ class RefCollection:
             if key in ref.links and ref.links[key] == value:
                 return ref
     
-    def get_references(self):
+    def get_references(self, tag=None):
+        if tag:
+            tagged = {}
+            for key,ref in self.refs.items():
+                if tag in ref.tags: tagged[key] = ref
+            return tagged
+        
         return self.refs
     
     def search(self, args):
@@ -187,7 +200,7 @@ class RefCollection:
 
 
 def remove_accents(input_str):
-    nkfd_form = unicodedata.normalize('NFKD', unicode(input_str))
+    nkfd_form = unicodedata.normalize('NFKD', input_str)
     return u"".join([c for c in nkfd_form if unicodedata.category(c)[0] == 'L' and not unicodedata.combining(c) ])
 
 

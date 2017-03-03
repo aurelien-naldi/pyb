@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import urllib2
 import sys
 from doi import get_doi
 import re
 import os
+from urllib.request import urlopen,Request
 
 try:
     from bibtexparser.bparser import BibTexParser
@@ -59,20 +59,21 @@ class BiBTeXProvider:
             return
         
         try:
-            req = urllib2.Request("http://dx.doi.org/%s"%doi, headers = {'Accept' : 'application/x-bibtex'})
-            bibtex = urllib2.urlopen(req).read().strip()
+            req = Request("http://dx.doi.org/%s"%doi, headers = {'Accept' : 'application/x-bibtex'})
+            bibtex = urlopen(req).read()
         except: bibtex = None
         
         # add fallback request to crossref API
         if bibtex is None:
             try:
-                req = urllib2.Request("http://api.crossref.org/works/%s/transform/application/x-bibtex" % doi)
-                bibtex = urllib2.urlopen(req).read().strip()
+                req = Request("http://api.crossref.org/works/%s/transform/application/x-bibtex" % doi)
+                bibtex = urlopen(req).read()
             except: bibtex = None
         
         if bibtex is None:
             return None
         
+        bibtex = bibtex.decode('utf-8').strip()
         ref = self.parse_bibtex(bibtex)
         
         # add the DOI link
@@ -92,13 +93,11 @@ class BiBTeXProvider:
 
     def parse_bibtex_stream(self, bibtex):
         "Parse a bibtex entry (shared code between the load_bibtex and load_doi functions)"
-        #print( bibtex )
         bp = BibTexParser(bibtex, customization=customize_bibtex)
         entries = bp.get_entry_list()
         return entries
         
     def parse_bibtex(self, bibtex):
-        
         for b in self.parse_bibtex_stream(bibtex):
             return self.ref_from_bibtex(b)
         

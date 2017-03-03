@@ -109,7 +109,7 @@ Note: when a match is found by several metadata providers, it saves alternative 
         print( "Found "+key )
         print(ref)
         print()
-        askAdd = raw_input("Add this ref? [y/N] ")
+        askAdd = input("Add this ref? [y/N] ")
         if askAdd.strip().lower() == "y":
             key = collection.add_reference(ref)
             collection.save()
@@ -181,7 +181,9 @@ def import_file(collection, args):
 @plugins.command_aliases("ls,l")
 def list(collection, args):
     "List all stored references"
-    refs = collection.get_references()
+    tag = None
+    if len(args) == 1: tag = args[0]
+    refs = collection.get_references(tag)
     for key in sorted(refs.keys()):
         ref = refs[key]
         print("[%s]" % key)
