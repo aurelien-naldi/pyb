@@ -1,6 +1,6 @@
 import re
 
-DOI_PATTERN = "(^|\s|doi:|http[s]?://dx[.]doi[.]org/)(10[.][0-9]{2}[0-9]+/[^\s'\"&<>]*)($|\s)"
+DOI_PATTERN = "(^|\s|doi:|http[s]?://(dx[.])?doi[.]org/)(10[.][0-9]{2}[0-9]+/[^\s'\"&<>]*)($|\s)"
 
 def get_doi(string):
     """try to extract a DOI from a string.
