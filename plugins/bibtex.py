@@ -1,7 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import sys
+import json
 from doi import get_doi
 import re
 import os
@@ -56,7 +56,10 @@ class BiBTeXProvider:
         
         doi = get_doi(doi)
         if not doi:
+            print("not a DOI??")
             return
+        
+        print("retrieve from the DOI: ", doi)
         
         try:
             req = Request("http://dx.doi.org/%s"%doi, headers = {'Accept' : 'application/x-bibtex'})
@@ -221,7 +224,7 @@ def main(args):
     
     key = args[1]
     provider = BiBTeXProvider()
-    print( provider.load_ref(key) )
+    print( json.dumps(provider.load_ref(key)) )
 
 
 if __name__ == "__main__":

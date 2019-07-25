@@ -1,13 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-from __future__ import print_function
 import sys
 import re
+from urllib.request import urlopen
 
 try:
-    import urllib2
     import bs4 as BeautifulSoup
-    
     _HAS_DEPS = True
     
     def ref_load(plugins):
@@ -35,7 +33,7 @@ class HTMLMetaProvider:
         
         url = match.groups()[0]
         try:
-            html = urllib2.urlopen(url).read()
+            html = urlopen(url).read()
             soup = BeautifulSoup.BeautifulSoup(html)
         except:
             return None
