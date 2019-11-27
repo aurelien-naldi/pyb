@@ -59,8 +59,6 @@ class BiBTeXProvider:
             print("not a DOI??")
             return
         
-        print("retrieve from the DOI: ", doi)
-        
         try:
             req = Request("http://dx.doi.org/%s"%doi, headers = {'Accept' : 'application/x-bibtex'})
             bibtex = urlopen(req).read()

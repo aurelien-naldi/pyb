@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 from doi import get_doi
-import urllib2
+from urllib.request import urlopen,Request
 import sys
 import re
 
@@ -30,7 +30,7 @@ def test_raw():
     fetch = "efetch.fcgi?db=pubmed&id=%s&rettype=xml&retmode=text"
     url = base+fetch % "4655"
 
-    xml = urllib2.urlopen(url).read()
+    xml = urlopen(url).read()
     soup = bs4.BeautifulSoup(xml)
 
     article = soup.find("article")
@@ -81,8 +81,7 @@ class PubmedProvider:
         This will retrieve the metadata from pubmed, and create a Ref object based on it.
         """
         handle = Entrez.efetch(db='pubmed', id=pmid, retmode='text', rettype='xml')
-        records = Entrez.parse(handle)
-        record = records.next()['MedlineCitation']['Article']
+        record = Entrez.read(handle)['PubmedArticle'][0]['MedlineCitation']['Article']
         
         title = record["ArticleTitle"]
         authors = []
