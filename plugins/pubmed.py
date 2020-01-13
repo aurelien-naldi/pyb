@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
-from doi import get_doi
+from . import doi as mod_doi
 from urllib.request import urlopen,Request
 import sys
 import re
@@ -58,7 +58,7 @@ class PubmedProvider:
         if m:
             return m.groups()[0]
         
-        doi = get_doi(string)
+        doi = mod_doi.get_doi(string)
         if doi:
             return self.find_pmid_for_doi(doi)
 

@@ -2,7 +2,7 @@
 
 import sys
 import json
-from doi import get_doi
+from . import doi as mod_doi
 import re
 import os
 from urllib.request import urlopen,Request
@@ -54,7 +54,7 @@ class BiBTeXProvider:
     def load_doi(self, doi):
         "Create a ref based on a DOI, using the bibtex obtained from the DOI providers"
         
-        doi = get_doi(doi)
+        doi = mod_doi.get_doi(doi)
         if not doi:
             print("not a DOI??")
             return

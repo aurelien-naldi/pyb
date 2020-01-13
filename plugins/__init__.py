@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
-import imp
+import importlib
 import sys
 import os
 
@@ -15,8 +15,7 @@ def load_plugins():
             try:
                 filepath = os.path.join(basedir, name)
                 mod_name,file_ext = os.path.splitext(os.path.split(filepath)[-1])
-                py_mod = imp.load_source(mod_name, filepath)
-
+                py_mod = importlib.import_module('.%s' % mod_name, module.__name__)
                 if hasattr(py_mod, expected_entry):
                     getattr(py_mod, expected_entry)(module)
             except:
